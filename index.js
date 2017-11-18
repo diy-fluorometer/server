@@ -1,9 +1,10 @@
 const serialPort = require('serialport');
 const express = require('express');
 const db = require('./lib/data');
+const path = require('path');
 
 const app = express();
-app.use('/', express.static('client'));
+app.use('/', express.static(path.dirname(require.main.filename) + '/client'));
 
 var opened = false;
 
