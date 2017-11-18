@@ -32,7 +32,7 @@ app.get('/scan', (req,res) => {
       opened = false;
       res.end();
       return false;
-    },10000);
+    },30000);
    
     var conn = new serialPort(config.port, {
       baudRate: 9600,
