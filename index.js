@@ -76,7 +76,8 @@ app.get('/scan', (req,res) => {
   }
 });
 
-app.use('/client', express.static(path.dirname(require.main.filename) + '/client'));
+app.use('/client/', express.static(path.dirname(require.main.filename) + '/client'));
+//app.use('/', express.static('client'));
 
 app.listen(9909, () => {
   db.initDB();
