@@ -3,7 +3,7 @@ const express = require('express');
 const db = require('./lib/data');
 
 const app = express();
-app.use(express.static('public'));
+app.use('/', express.static('client'));
 
 var opened = false;
 
