@@ -4,8 +4,14 @@ const db = require('./lib/data');
 const path = require('path');
 
 const app = express();
-app.use('/', express.static(path.dirname(require.main.filename) + '/client'));
 
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
+app.use('/', express.static(path.dirname(require.main.filename) + '/client'));
 var opened = false;
 
 app.get('/scan', (req,res) => {
@@ -22,7 +28,7 @@ app.get('/scan', (req,res) => {
       return false;
     },10000);
    
-    var conn = new serialPort('/dev/ttyACM2', {
+    var conn = new serialPort('/dev/ttyACM1', {
       baudRate: 9600,
       dataBits: 8,
       parity: 'none',
