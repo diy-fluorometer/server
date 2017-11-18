@@ -2,6 +2,7 @@ const serialPort = require('serialport');
 const express = require('express');
 const db = require('./lib/data');
 const path = require('path');
+const config = require('./config');
 
 const app = express();
 
@@ -11,10 +12,17 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.use('/', express.static(path.dirname(require.main.filename) + '/client'));
 var opened = false;
 
 app.get('/scan', (req,res) => {
+  var amountSamples = 5;
+  var samplesTaken = 0;
+  var total = 0;
+
+  if (req.query.samples) {
+    amountSamples = req.query.samples;
+  }
+
   if (opened) {
     res.status(500);
     res.send('busy');
@@ -28,15 +36,13 @@ app.get('/scan', (req,res) => {
       return false;
     },10000);
    
-    var conn = new serialPort('/dev/ttyACM1', {
+    var conn = new serialPort(config.port, {
       baudRate: 9600,
       dataBits: 8,
       parity: 'none',
       stopBits: 1,
       flowControl: false
     });
-
-    conn.write('s');
 
     conn.on('error', (err) => {
       console.log('serial comm error');
@@ -54,16 +60,23 @@ app.get('/scan', (req,res) => {
     });
 
     conn.on('data', (data) => {
+      console.log(amountSamples);
       console.log(data);
-      res.send({value : data.toString(), timestamp : Date.now()});
-      conn.close();
-      clearTimeout(timeout);
-      opened = false;
-      return true;
-    });
+      total += Number(data);
+      samplesTaken++;
 
+      if (samplesTaken == amountSamples) {
+        res.send({value : total/samplesTaken, timestamp : Date.now(), samples : samplesTaken});
+        conn.close();
+        clearTimeout(timeout);
+        opened = false;
+        return true;
+      }
+    });
   }
 });
+
+app.use('/client', express.static(path.dirname(require.main.filename) + '/client'));
 
 app.listen(9909, () => {
   db.initDB();
