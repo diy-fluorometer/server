@@ -29,10 +29,8 @@ app.get('/scan', (req,res) => {
   } else {
     opened = true;
     var timeout = setTimeout((timeout) => {
-      res.status(500);
-      console.log('killed');
-      res.send({value : -1, timestamp : Date.now()});
       opened = false;
+      res.end();
       return false;
     },10000);
    
