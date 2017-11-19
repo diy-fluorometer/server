@@ -18,6 +18,7 @@ app.get('/scan', (req,res) => {
   var amountSamples = 5;
   var samplesTaken = 0;
   var total = 0;
+  var recs = [];
 
   if (req.query.samples) {
     amountSamples = req.query.samples;
@@ -41,7 +42,7 @@ app.get('/scan', (req,res) => {
       stopBits: 1,
       flowControl: false
     });
-
+    var parser = conn.pipe(new serialPort.parsers.Readline({delimiter: '\r\n' }));
     conn.on('error', (err) => {
       console.log('serial comm error');
       console.log(err);
@@ -57,14 +58,15 @@ app.get('/scan', (req,res) => {
       console.log('opened');
     });
 
-    conn.on('data', (data) => {
+    parser.on('data', (data) => {
       console.log(amountSamples);
-      console.log(data);
-      total += Number(data);
+      console.log(data.toString());
+      total += Number(data.toString());
+      recs.push(data.toString());
       samplesTaken++;
 
       if (samplesTaken == amountSamples) {
-        res.send({value : total/samplesTaken, timestamp : Date.now(), samples : samplesTaken});
+        res.send({value : total/samplesTaken, timestamp : Date.now(), samples : samplesTaken, records : recs});
         conn.close();
         clearTimeout(timeout);
         opened = false;
